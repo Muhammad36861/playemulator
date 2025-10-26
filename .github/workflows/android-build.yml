@@ -1,0 +1,46 @@
+# Configure environment variables (replace with your actual secrets)
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }} # Required for EAS build service
+  # KEYSTORE_JKS_BASE64: ${{ secrets.KEYSTORE_JKS_BASE64 }} # For bare React Native projects
+  # KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+
+steps:
+  - name: 1. Checkout repository
+    uses: actions/checkout@v4
+
+  - name: 2. Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: '20'
+      cache: 'npm'
+
+  - name: 3. Install dependencies
+    run: npm install
+
+  # Install EAS CLI (the modern tool for Expo/React Native builds)
+  - name: 4. Install EAS CLI
+    run: npm install -g eas-cli
+
+  # The actual build step using EAS (Expo Application Services)
+  - name: 5. Build Android APK/AAB
+    # This command triggers a remote build on the EAS server.
+    # It requires your EXPO_TOKEN to be set as a GitHub Secret.
+    run: eas build --platform android --profile production --non-interactive
+
+  # Download the generated artifact (APK or AAB) from the build service
+  - name: 6. Download latest build artifact
+    # This step depends on the output of the 'eas build' command, which typically prints a download URL.
+    # A more robust solution involves polling the EAS status or using a specific EAS action if available.
+    # For simplicity in this template, we assume EAS handles artifact delivery or provides a direct link.
+    
+    # --- MOCK ARTIFACT RETRIEVAL ---
+    # A real implementation would require a dedicated action or script to fetch the final file.
+    # Example for simple file upload:
+    if: success()
+    uses: actions/upload-artifact@v4
+    with:
+      name: gamehub-android-build
+      path: ./path/to/your/app.aab # Replace with the actual path the build process generates
+      
+  - name: 7. Summary
+    run: echo "Android build pipeline complete. Artifact uploaded."
